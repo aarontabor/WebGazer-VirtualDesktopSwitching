@@ -61,6 +61,9 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   // TODO: initialize webGazer.js
+  if (settings.switchingTechnique == 'gaze') {
+    webgazer.setRegression('threadedRidge').setGazeListener(onGaze).begin().showPredictionPoints(true);
+  }
 
   // build displays and virtual desktops
   displays = [
@@ -228,6 +231,13 @@ function detectKeyboardShortcuts() {
     displays[focusedDisplay].switchRight();
     switchHandled = true;
   }
+}
+
+function onGaze(gazeData, elapsedTime) {
+  if (gazeData == null) {
+    return;
+  }
+  focusedDisplay = gazeData.x < width/2 ? 0 : 1;
 }
 
 
