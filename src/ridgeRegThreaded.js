@@ -54,7 +54,7 @@
         this.dataClicks = new webgazer.util.DataWindow(dataWindow);
         this.dataTrail = new webgazer.util.DataWindow(dataWindow);
 
-        this.worker = new Worker('ridgeWorker.js');
+        this.worker = new Worker('src/ridgeWorker.js');
         this.worker.onerror = function(err) { console.log(err.message); };
         this.worker.onmessage = function(evt){
           weights.X = evt.data.X;
