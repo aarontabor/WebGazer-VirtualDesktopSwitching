@@ -127,7 +127,6 @@ function retrain() {
 
     var coefficientsX = ridge(screenXArray, eyeFeatures, ridgeParameter);
     var coefficientsY = ridge(screenYArray, eyeFeatures, ridgeParameter); 
-    console.log(coefficientsX);
     self.postMessage({'X':coefficientsX, 'Y': coefficientsY});
     self.needsTraining = false;
 }
