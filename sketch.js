@@ -88,7 +88,10 @@ function setup() {
 
   // initialize begin button
   beginButton = createButton('Begin Timed Experiment');
-  beginButton.mousePressed(function() {state = STATE_EXPERIMENT});
+  beginButton.mousePressed(function() {
+    state = STATE_EXPERIMENT;
+    redrawSketch();
+  });
 
   // initial program state
   state = STATE_PRACTICE;
@@ -96,14 +99,20 @@ function setup() {
   currentTrial = 0;
   switchHandled = false;
   isPractice = true;
+
+  redrawSketch();
 }
 
 function draw() {
+  detectKeyboardShortcuts(); // TODO: is there a cleaner way to wire this asychronous behavior up?
+}
+
+// For performance reasons (with the webgazer.js library), only redraw the canvas when an "interesting" event occurs
+function redrawSketch() {
   clear();
 
-  detectKeyboardShortcuts(); // TODO: is there a cleaner way to wire this asychronous behavior up?
-
-  inputBox.hide(); // it will later be un-hidden by virtual desktop if appropriate
+  // these fields will later be unhidden as appropriate
+  inputBox.hide();
   beginButton.hide();
 
   switch (state) {
@@ -185,6 +194,8 @@ function mouseClicked() {
   for (var i=0; i<displays.length; i++) {
     if (isCoordinateInDisplay(x, y, i)) {
       focusedDisplay = i;
+      redrawSketch();
+      return;
     }
   }
 }
@@ -214,6 +225,8 @@ function onUserSubmit() {
   if (currentTrial >= trialHints.getRowCount()) {
     state = STATE_FINISH;
   }
+
+  redrawSketch();
 }
 
 function detectKeyboardShortcuts() {
@@ -225,11 +238,13 @@ function detectKeyboardShortcuts() {
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown(LEFT_ARROW)) {
     displays[focusedDisplay].switchLeft();
     switchHandled = true;
+    redrawSketch();
   }
 
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown (RIGHT_ARROW)) {
     displays[focusedDisplay].switchRight();
     switchHandled = true;
+    redrawSketch();
   }
 }
 
