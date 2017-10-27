@@ -5,17 +5,21 @@
 
 // Program States //////////
 var STATE_PRACTICE = 1;
-var STATE_EXPERIMENT = 2;
-var STATE_FINISH = 3;
+var STATE_TRAINING = 2;
+var STATE_EXPERIMENT = 3;
+var STATE_FINISH = 4;
+
 
 
 // Display Dimensions (abstract coordinates) //////////
-var DISPLAY_WIDTH = 0.8;
-var DISPLAY_HEIGHT = 0.8;
-var DISPLAY_XS = [-0.45, 0.45]; 
+var DISPLAY_WIDTH = 0.75;
+var DISPLAY_HEIGHT = 0.75;
+var DISPLAY_XS = [-0.6, 0.6];
 var DISPLAY_YS = [0.0, 0.0];
 
-var INPUT_WIDTH = 0.4
+var INPUT_WIDTH = 0.4;
+
+var TARGET_RADIUS = 0.1;
 
 
 // Global variables //////////
@@ -28,11 +32,15 @@ var adjectives;
 
 var inputBox;
 var beginButton;
+var trainButton;
 
 // TODO: implement this
 var trialHints;
 var currentTrial;
 
+var targetsTable;
+var trainingTargets;
+var currentTrainingTarget;
 
 var displays;
 var focusedDisplay;
@@ -55,14 +63,32 @@ function preload() {
 
   // load hints and keyword strings from file
   trialHints = loadTable('data/wordset-example/hints.csv', 'csv', 'header');
+
+  // load training target locations
+  targetsTable = loadTable('data/training-target-locations.csv', 'csv', 'header');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  // TODO: initialize webGazer.js
   if (settings.switchingTechnique == 'gaze') {
-    webgazer.setRegression('threadedRidge').setGazeListener(onGaze).begin().showPredictionPoints(true);
+    webgazer.setRegression('threadedRidge');
+
+    // When I explicitly set a tracker, there is a huge performance hit. Why is this? I think the webgazer defaults to clmtrackr anyway...
+    // webgazer.setTracker('clmtrackr');
+
+    webgazer.setGazeListener(onGaze);
+    webgazer.begin();
+
+    // Debugging output
+    webgazer.showPredictionPoints(true);
+
+    // Only consider mouse activity during training
+    webgazer.removeMouseEventListeners();
+
+    // TODO: not sure if this really does anything...
+    webgazer.params.imgWidth = width;
+    webgazer.params.imgHeight = height;
   }
 
   // build displays and virtual desktops
@@ -79,6 +105,15 @@ function setup() {
     ], 1),
   ];
 
+  // build all training targets
+  trainingTargets = [];
+  for (var i=0; i<targetsTable.getRowCount(); i++) {
+    var x = parseFloat(targetsTable.getRow(i).get('x'));
+    var y = parseFloat(targetsTable.getRow(i).get('y'));
+    trainingTargets.push(new Target(x, y, TARGET_RADIUS));
+  }
+  print(trainingTargets);
+
   // initialize text input box
   inputBox = createInput();
   inputBox.style('font-size: 30px');
@@ -93,12 +128,22 @@ function setup() {
     redrawSketch();
   });
 
+  // initialize webgazer training button
+  trainButton = createButton('Train Eye Tracker');
+  trainButton.mousePressed(function() {
+    webgazer.addMouseEventListeners();
+    currentTrainingTarget = 0;
+    state = STATE_TRAINING;
+    redrawSketch();
+  });
+
   // initial program state
   state = STATE_PRACTICE;
   focusedDisplay = 0;
   currentTrial = 0;
   switchHandled = false;
   isPractice = true;
+  currentTrainingTarget = 0;
 
   redrawSketch();
 }
@@ -114,11 +159,15 @@ function redrawSketch() {
   // these fields will later be unhidden as appropriate
   inputBox.hide();
   beginButton.hide();
+  trainButton.hide();
 
   switch (state) {
     case STATE_PRACTICE:
       isPractice = true;
       drawPractice();
+      break;
+    case STATE_TRAINING:
+      drawTraining();
       break;
     case STATE_EXPERIMENT:
       isPractice = false;
@@ -156,7 +205,16 @@ function drawPractice() {
   [x, y] = Scaler.abstract2pixel_coordinate(-0.95, -0.60);
   text('Switching Technique: ' + settings.switchingTechnique, x, y);
 
+  // draw "begin training" button
+  [x, y] = Scaler.abstract2pixel_coordinate(-0.95, 0.85);
+  trainButton.position(x, y);
+  trainButton.show();
+
   drawExperiment();
+}
+
+function drawTraining() {
+  trainingTargets[currentTrainingTarget].draw();
 }
 
 function drawExperiment() {
@@ -191,12 +249,34 @@ function drawFinish() {
 // Asychronous Behavior //////////
 function mouseClicked() {
   var [x, y] = Scaler.pixel2abstract_coordinate(mouseX, mouseY);
-  for (var i=0; i<displays.length; i++) {
-    if (isCoordinateInDisplay(x, y, i)) {
-      focusedDisplay = i;
-      redrawSketch();
-      return;
-    }
+
+  switch (state) {
+    case STATE_PRACTICE:
+    case STATE_EXPERIMENT:
+      for (var i=0; i<displays.length; i++) {
+        if (isCoordinateInDisplay(x, y, i)) {
+          focusedDisplay = i;
+          redrawSketch();
+          return;
+        }
+      }
+      break;
+
+    case STATE_TRAINING:
+      var t = trainingTargets[currentTrainingTarget];
+      var r = t.radius;
+
+      if (t.pointInTarget(x, y)) {
+        currentTrainingTarget += 1;
+        if (currentTrainingTarget >= trainingTargets.length) {
+          webgazer.removeMouseEventListeners();
+          currentTrainingTarget = 0;
+          state = STATE_PRACTICE;
+        }
+        redrawSketch();
+      }
+
+      break;
   }
 }
 
@@ -397,6 +477,40 @@ class CategoryViewerVirtualDesktop {
     text('18. ' + this.values[17], x - w/2 + 3*w/4 + padding, y - h/2 + 3*h/6 + padding);
     text('19. ' + this.values[18], x - w/2 + 3*w/4 + padding, y - h/2 + 4*h/6 + padding);
     text('20. ' + this.values[19], x - w/2 + 3*w/4 + padding, y - h/2 + 5*h/6 + padding);
+  }
+}
+
+class Target {
+  constructor(x, y, radius) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+  }
+
+  draw() {
+    var [pixel_x, pixel_y] = Scaler.abstract2pixel_coordinate(this.x,this.y);
+    var pixel_r = Scaler.abstract2pixel_height(this.radius);
+    ellipseMode(RADIUS);
+
+    stroke(255, 0, 0);
+    strokeWeight(4);
+    fill(255);
+
+    //draw outer ring
+    ellipse(pixel_x, pixel_y, pixel_r, pixel_r);
+
+    // draw center
+    fill(255, 0, 0);
+    ellipse(pixel_x, pixel_y, pixel_r/2, pixel_r/2);
+  }
+
+  pointInTarget(x, y) {
+    var a = x > (this.x - this.radius);
+    var b = x < (this.x + this.radius);
+    var c = y > (this.y - this.radius);
+    var d = y < (this.y + this.radius);
+
+    return a && b && c && d;
   }
 }
 
