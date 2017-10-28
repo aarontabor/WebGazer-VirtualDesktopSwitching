@@ -72,12 +72,13 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   if (settings.switchingTechnique == 'gaze') {
+    webgazer.params.imgWidth = 320;
+    webgazer.params.imgHeight = 240;
     webgazer.setRegression('threadedRidge');
 
     // When I explicitly set a tracker, there is a huge performance hit. Why is this? I think the webgazer defaults to clmtrackr anyway...
     // webgazer.setTracker('clmtrackr');
 
-    webgazer.setGazeListener(onGaze);
     webgazer.begin();
 
     // Debugging output
@@ -85,10 +86,6 @@ function setup() {
 
     // Only consider mouse activity during training
     webgazer.removeMouseEventListeners();
-
-    // TODO: not sure if this really does anything...
-    webgazer.params.imgWidth = width;
-    webgazer.params.imgHeight = height;
   }
 
   // build displays and virtual desktops
@@ -310,6 +307,8 @@ function onUserSubmit() {
 }
 
 function detectKeyboardShortcuts() {
+  detectGaze();
+
   // user must release both arrow keys bt/wn switches
   if (switchHandled && !keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)) {
     switchHandled = false;
@@ -326,6 +325,15 @@ function detectKeyboardShortcuts() {
     switchHandled = true;
     redrawSketch();
   }
+}
+
+function detectGaze() {
+  var gazeData = webgazer.getCurrentPrediction();
+  if (gazeData == null) {
+    return;
+  }
+
+  focusedDisplay = gazeData.x >= width/2 ? 1 : 0;
 }
 
 function onGaze(gazeData, elapsedTime) {
