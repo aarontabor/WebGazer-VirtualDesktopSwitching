@@ -117,20 +117,11 @@ function setup() {
 
   // initialize begin button
   beginButton = createButton('Begin Timed Experiment');
-  beginButton.mousePressed(function() {
-    state = STATE_EXPERIMENT;
-    redrawSketch();
-  });
+  beginButton.mousePressed(transitionToExperiment);
 
   // initialize webgazer training button
   trainButton = createButton('Train Eye Tracker');
-  trainButton.mousePressed(function() {
-    webgazer.addMouseEventListeners();
-    webgazer.showPredictionPoints(true);
-    currentTrainingTarget = 0;
-    state = STATE_TRAINING;
-    redrawSketch();
-  });
+  trainButton.mousePressed(transitionToTraining);
 
   // initial program state
   state = STATE_PRACTICE;
@@ -140,6 +131,19 @@ function setup() {
   isPractice = true;
   currentTrainingTarget = 0;
 
+  redrawSketch();
+}
+
+function transitionToExperiment() {
+  state = STATE_EXPERIMENT;
+  redrawSketch();
+}
+
+function transitionToTraining() {
+  webgazer.addMouseEventListeners();
+  webgazer.showPredictionPoints(true);
+  currentTrainingTarget = 0;
+  state = STATE_TRAINING;
   redrawSketch();
 }
 
