@@ -86,18 +86,7 @@ function setup() {
   }
 
   // build displays and virtual desktops
-  displays = [
-    new Display([
-      new DummyVirtualDesktop(),
-      new InputVirtualDesktop(),
-      new DummyVirtualDesktop(),
-    ], 1),
-    new Display([
-      new CategoryViewerVirtualDesktop('Nouns', nouns),
-      new CategoryViewerVirtualDesktop('Verbs', verbs),
-      new CategoryViewerVirtualDesktop('Adjectives', adjectives),
-    ], 1),
-  ];
+  initializeDisplays();
 
   // build all training targets
   trainingTargets = [];
@@ -364,6 +353,20 @@ function keywordFor(hintTableRow) {
   }
 }
 
+function initializeDisplays() {
+  displays = [
+    new Display([
+      new DummyVirtualDesktop(),
+      new InputVirtualDesktop(),
+      new DummyVirtualDesktop(),
+    ], 1),
+    new Display([
+      new CategoryViewerVirtualDesktop('Nouns', nouns),
+      new CategoryViewerVirtualDesktop('Verbs', verbs),
+      new CategoryViewerVirtualDesktop('Adjectives', adjectives),
+    ], 1),
+  ];
+}
 
 
 // Classes //////////
