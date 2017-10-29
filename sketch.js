@@ -81,9 +81,6 @@ function setup() {
 
     webgazer.begin();
 
-    // Debugging output
-    webgazer.showPredictionPoints(true);
-
     // Only consider mouse activity during training
     webgazer.removeMouseEventListeners();
   }
@@ -129,6 +126,7 @@ function setup() {
   trainButton = createButton('Train Eye Tracker');
   trainButton.mousePressed(function() {
     webgazer.addMouseEventListeners();
+    webgazer.showPredictionPoints(true);
     currentTrainingTarget = 0;
     state = STATE_TRAINING;
     redrawSketch();
@@ -267,6 +265,7 @@ function mouseClicked() {
         currentTrainingTarget += 1;
         if (currentTrainingTarget >= trainingTargets.length) {
           webgazer.removeMouseEventListeners();
+        webgazer.showPredictionPoints(false);
           currentTrainingTarget = 0;
           state = STATE_PRACTICE;
         }
