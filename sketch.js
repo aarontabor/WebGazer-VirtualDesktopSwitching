@@ -217,17 +217,7 @@ function drawExperiment() {
     var [x, y] = Scaler.abstract2pixel_coordinate(DISPLAY_XS[i], DISPLAY_YS[i]);
     var w = Scaler.abstract2pixel_width(DISPLAY_WIDTH);
     var h = Scaler.abstract2pixel_height(DISPLAY_HEIGHT);
-
-    if (focusedDisplay == i) {
-      fill(255);
-      stroke(0, 255, 0);
-      strokeWeight(10);
-      rectMode(CENTER);
-      rect(x, y, w, h);
-    }
-
     displays[i].draw(x,y,w,h);
-
   }
 }
 
