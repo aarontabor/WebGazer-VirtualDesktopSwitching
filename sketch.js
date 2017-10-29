@@ -27,15 +27,27 @@ var state;
 var settings;
 
 var nouns;
+var exampleNouns;
+var wordset1Nouns;
+var wordset2Nouns;
 var verbs;
+var exampleVerbs;
+var wordset1Verbs;
+var wordset2Verbs;
 var adjectives;
+var exampleAdjectives;
+var wordset1Adjectives;
+var wordset2Adjectives;
 
 var inputBox;
 var beginButton;
 var trainButton;
 
-// TODO: implement this
+// load table is asychronous, so just load everything right off the bat.
 var trialHints;
+var exampleHints;
+var wordset1Hints;
+var wordset2Hints;
 var currentTrial;
 
 var targetsTable;
@@ -57,12 +69,20 @@ function preload() {
   print(settings);
 
   // load nouns, verbs, and adjectives
-  nouns = loadStrings('data/wordset-example/nouns.txt');
-  verbs = loadStrings('data/wordset-example/verbs.txt');
-  adjectives = loadStrings('data/wordset-example/adjectives.txt');
+  exampleNouns = loadStrings('data/wordset-example/nouns.txt');
+  wordset1Nouns = loadStrings('data/wordset-1/nouns.txt');
+  wordset2Nouns = loadStrings('data/wordset-2/nouns.txt');
+  exampleVerbs = loadStrings('data/wordset-example/verbs.txt');
+  wordset1Verbs = loadStrings('data/wordset-1/verbs.txt');
+  wordset2Verbs = loadStrings('data/wordset-2/verbs.txt');
+  exampleAdjectives = loadStrings('data/wordset-example/adjectives.txt');
+  wordset1Adjectives = loadStrings('data/wordset-1/adjectives.txt');
+  wordset2Adjectives = loadStrings('data/wordset-2/adjectives.txt');
 
   // load hints and keyword strings from file
-  trialHints = loadTable('data/wordset-example/hints.csv', 'csv', 'header');
+  exampleHints = loadTable('data/wordset-example/hints.csv', 'csv', 'header');
+  wordset1Hints = loadTable('data/wordset-1/hints.csv', 'csv', 'header');
+  wordset2Hints = loadTable('data/wordset-2/hints.csv', 'csv', 'header');
 
   // load training target locations
   targetsTable = loadTable('data/training-target-locations.csv', 'csv', 'header');
@@ -86,6 +106,10 @@ function setup() {
   }
 
   // build displays and virtual desktops
+  nouns = exampleNouns;
+  verbs = exampleVerbs;
+  adjectives = exampleAdjectives;
+
   initializeDisplays();
 
   // build all training targets
@@ -115,6 +139,7 @@ function setup() {
   // initial program state
   state = STATE_PRACTICE;
   focusedDisplay = 0;
+  trialHints = exampleHints;
   currentTrial = 0;
   switchHandled = false;
   isPractice = true;
@@ -124,7 +149,21 @@ function setup() {
 }
 
 function transitionToExperiment() {
+  // load wordset for experiment
+  trialHints = settings.wordset == '1' ? wordset1Hints : wordset2Hints;
+  currentTrial = 0;
+
+  nouns = settings.wordset == '1' ? wordset1Nouns : wordset2Nouns;
+  verbs = settings.wordset == '1' ? wordset1Verbs : wordset2Verbs;
+  adjectives = settings.wordset == '1' ? wordset1Adjectives : wordset2Adjectives;
+
+  // reset Displays
+  initializeDisplays();
+
+  // transition to experiment state
   state = STATE_EXPERIMENT;
+
+  // redraw canvas
   redrawSketch();
 }
 
