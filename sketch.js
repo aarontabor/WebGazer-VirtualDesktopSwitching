@@ -69,6 +69,9 @@ var focusedDisplay;
 var switchHandled; // a flag to ensure user must release arrow keys bt/wn switches
 var isPractice;
 
+var trialStartTimestamp;
+var trialEndTimestamp;
+
 
 
 // P5.js Methods //////////
@@ -219,6 +222,7 @@ function redrawSketch() {
       break;
     case STATE_EXPERIMENT:
       isPractice = false;
+      trialStartTimestamp = Date.now();
       drawExperiment();
       break;
     case STATE_BLOCK_REST:
@@ -337,21 +341,19 @@ function mouseClicked() {
 // TODO: log this (maybe?)
 function mouseMoved() {}
 
-// TODO: log this -- all keyboard activity -- log which display / virtual desktop was focused
-function onKeyTyped() {}
-
-// TODO: log this -- keyboard activity within textbox
-function onUserInput() {}
+function keyTyped() {
+  logger.logKeystroke(key, inputBox == document.activeElement);
+}
 
 function onUserSubmit() {
-
   var currentText = inputBox.value();
-
   if (currentText != keywordFor(trialHints.getRow(currentTrial))) {
     return;
   }
 
   // TODO: log statistics
+  trialEndTimestamp = Date.now();
+  logger.logTrial();
 
   inputBox.value('');
   currentTrial += 1;
@@ -377,13 +379,19 @@ function detectKeyboardShortcuts() {
   }
 
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown(LEFT_ARROW)) {
+    var fromDisplay = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchLeft();
+    var toDisplay = displays[focusedDisplay].activeVirtualDesktop;
+    logger.logSwitch(focusedDisplay, fromDisplay, toDisplay);
     switchHandled = true;
     redrawSketch();
   }
 
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown (RIGHT_ARROW)) {
+    var fromDisplay = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchRight();
+    var toDisplay = displays[focusedDisplay].activeVirtualDesktop;
+    logger.logSwitch(focusedDisplay, fromDisplay, toDisplay);
     switchHandled = true;
     redrawSketch();
   }
@@ -601,16 +609,33 @@ class Target {
 class Settings {}
 
 class Logger {
-  constructor() {}
+  constructor() {
+    this.filenameTemplate = '';
 
-  logKeystroke(display, virtualDesktop, keyStr) {}
-  logInputBoxKeystroke(keyStr) {}
-  logSwitch(display, fromVirtualDesktop, toVirtualDesktop) {}
+    this.trialTable = '';
+    this.keystrokeTable = '';
+    this.switchTable = '';
+  }
+
+
+  logTrial() {
+    // pid, groupID, wordset, phase, block, trial, isPractice, switchingTechnique, elapsedTimeMillis, beginTimestamp, endTimestamp, erroneousSwitchCount
+  }
+
+  logKeystroke(keyString, isInputBoxFocused) {
+    // pid, groupID, wordset, phase, block, trial, isPractice, switchingTechnique, timestamp, keyString, isInputBoxFocused
+  }
+
+  logSwitch(display, fromVirtualDesktop, toVirtualDesktop) {
+    // pid, groupID, wordset, phase, block, trial, isPractice, switchingTechnique, timestamp, display, fromVirtualDesktop, toVirtualDesktop
+  }
+
+  // This may be useful for measuring how "busy" the user was -- how much mouse activity they perform
   logClick(x,y) {}
-
-  // are these overkill?
-  logGaze(x,y) {}
   logMouse(x,y) {}
+
+  // What what I do with this? -- How may times does user look back and forth?
+  logGaze(x,y) {}
 
   flush() {}
 }

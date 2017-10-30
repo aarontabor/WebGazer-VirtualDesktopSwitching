@@ -1,7 +1,7 @@
 {
   "participantID": -1,
   "groupID": -1,
-  "trial": 1,
+  "phase": 1,
   "wordset": 1,
   "switchingTechnique": "mouse-and-keyboard"
 }
