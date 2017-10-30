@@ -31,6 +31,7 @@ var TRIALS_PER_BLOCK = 10;
 // Global variables //////////
 var state;
 var settings;
+var logger;
 
 var nouns;
 var exampleNouns;
@@ -103,6 +104,9 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  // initialize logger
+  logger = new Logger();
+
   if (settings.switchingTechnique == 'gaze') {
     webgazer.params.imgWidth = 320;
     webgazer.params.imgHeight = 240;
@@ -138,7 +142,6 @@ function setup() {
   inputBox.style('font-size: 30px');
   inputBox.size(Scaler.abstract2pixel_width(INPUT_WIDTH));
   inputBox.changed(onUserSubmit);
-  inputBox.input(onUserInput);
 
   // initialize begin button
   beginButton = createButton('Begin Timed Experiment');
@@ -354,6 +357,7 @@ function onUserSubmit() {
   // TODO: log statistics
   trialEndTimestamp = Date.now();
   logger.logTrial();
+  logger.flush();
 
   inputBox.value('');
   currentTrial += 1;
@@ -612,22 +616,101 @@ class Logger {
   constructor() {
     this.filenameTemplate = '';
 
-    this.trialTable = '';
-    this.keystrokeTable = '';
-    this.switchTable = '';
+    this.trialTableFilename = 'output/trials-p' + settings.participantID + '-' + Date.now() + '.csv';
+    this.trialTable = new p5.Table();
+    this.trialTable.addColumn('participantID');
+    this.trialTable.addColumn('groupID');
+    this.trialTable.addColumn('wordset');
+    this.trialTable.addColumn('phase');
+    this.trialTable.addColumn('block');
+    this.trialTable.addColumn('trial');
+    this.trialTable.addColumn('isPractice');
+    this.trialTable.addColumn('switchingTechnique');
+    this.trialTable.addColumn('elapsedTimeMillis');
+    this.trialTable.addColumn('beginTimestamp');
+    this.trialTable.addColumn('endTimestamp');
+    this.trialTable.addColumn('erroneousSwitchCount');
+
+    this.keystrokeTableFilename = 'output/keystrokes-p' + settings.participantID + '-' + Date.now() + '.csv';
+    this.keystrokeTable = new p5.Table();
+    this.keystrokeTable.addColumn('participantID');
+    this.keystrokeTable.addColumn('groupID');
+    this.keystrokeTable.addColumn('wordset');
+    this.keystrokeTable.addColumn('phase');
+    this.keystrokeTable.addColumn('block');
+    this.keystrokeTable.addColumn('trial');
+    this.keystrokeTable.addColumn('isPractice');
+    this.keystrokeTable.addColumn('switchingTechnique');
+    this.keystrokeTable.addColumn('timestamp');
+    this.keystrokeTable.addColumn('keyString');
+    this.keystrokeTable.addColumn('isInputBoxFocused');
+
+    this.switchTableFilename = 'output/switches-p' + settings.participantID + '-' + Date.now() + '.csv';
+    this.switchTable = new p5.Table();
+    this.switchTable.addColumn('participantID');
+    this.switchTable.addColumn('groupID');
+    this.switchTable.addColumn('wordset');
+    this.switchTable.addColumn('phase');
+    this.switchTable.addColumn('block');
+    this.switchTable.addColumn('trial');
+    this.switchTable.addColumn('isPractice');
+    this.switchTable.addColumn('switchingTechnique');
+    this.switchTable.addColumn('timestamp');
+    this.switchTable.addColumn('display');
+    this.switchTable.addColumn('fromVirtualDesktop');
+    this.switchTable.addColumn('toVirtualDesktop');
   }
 
 
   logTrial() {
-    // pid, groupID, wordset, phase, block, trial, isPractice, switchingTechnique, elapsedTimeMillis, beginTimestamp, endTimestamp, erroneousSwitchCount
+    var newRow = this.trialTable.addRow();
+    newRow.set('participantID', settings.participantID);
+    newRow.set('groupID', settings.groupID);
+    newRow.set('wordset', settings.wordset);
+    newRow.set('phase', settings.phase);
+    newRow.set('block', currentBlock);
+    newRow.set('trial', currentTrial);
+    newRow.set('isPractice', isPractice);
+    newRow.set('switchingTechnique', settings.switchingTechnique);
+    newRow.set('elapsedTimeMillis', trialEndTimestamp - trialStartTimestamp);
+    newRow.set('beginTimestamp', trialStartTimestamp);
+    newRow.set('endTimestamp', trialEndTimestamp);
+    newRow.set('erroneousSwitchCount', 0); // TODO: implement this
   }
 
   logKeystroke(keyString, isInputBoxFocused) {
-    // pid, groupID, wordset, phase, block, trial, isPractice, switchingTechnique, timestamp, keyString, isInputBoxFocused
+    var newRow = this.keystrokeTable.addRow();
+    newRow.set('participantID', settings.participantID);
+    newRow.set('groupID', settings.groupID);
+    newRow.set('wordset', settings.wordset);
+    newRow.set('phase', settings.phase);
+    newRow.set('block', currentBlock);
+    newRow.set('trial', currentTrial);
+    newRow.set('isPractice', isPractice);
+    newRow.set('switchingTechnique', settings.switchingTechnique);
+    newRow.set('timestamp', Date.now());
+    newRow.set('keyString', keyString);
+    newRow.set('isInputBoxFocused', isInputBoxFocused);
+
+    // for perfomance reasons, only persist this file to disk when `flush()` is called explicitly
   }
 
   logSwitch(display, fromVirtualDesktop, toVirtualDesktop) {
-    // pid, groupID, wordset, phase, block, trial, isPractice, switchingTechnique, timestamp, display, fromVirtualDesktop, toVirtualDesktop
+    var newRow = this.switchTable.addRow();
+    newRow.set('participantID', settings.participantID);
+    newRow.set('groupID', settings.groupID);
+    newRow.set('wordset', settings.wordset);
+    newRow.set('phase', settings.phase);
+    newRow.set('block', currentBlock);
+    newRow.set('trial', currentTrial);
+    newRow.set('isPractice', isPractice)
+    newRow.set('switchingTechnique', settings.switchingTechnique);
+    newRow.set('timestamp', Date.now());
+    newRow.set('display', display);
+    newRow.set('fromVirtualDesktop', fromVirtualDesktop);
+    newRow.set('toVirtualDesktop', toVirtualDesktop);
+
+    // for perfomance reasons, only persist this file to disk when `flush()` is called explicitly
   }
 
   // This may be useful for measuring how "busy" the user was -- how much mouse activity they perform
@@ -637,7 +720,11 @@ class Logger {
   // What what I do with this? -- How may times does user look back and forth?
   logGaze(x,y) {}
 
-  flush() {}
+  flush() {
+    saveTable(this.trialTable, this.trialTableFilename);
+    saveTable(this.keystrokeTable, this.keystrokeTableFilename);
+    saveTable(this.switchTable, this.switchTableFilename);
+  }
 }
 
 class Scaler {
