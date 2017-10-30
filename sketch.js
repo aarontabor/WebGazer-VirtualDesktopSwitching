@@ -379,19 +379,19 @@ function detectKeyboardShortcuts() {
   }
 
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown(LEFT_ARROW)) {
-    var fromDisplay = displays[focusedDisplay].activeVirtualDesktop;
+    var fromVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchLeft();
-    var toDisplay = displays[focusedDisplay].activeVirtualDesktop;
-    logger.logSwitch(focusedDisplay, fromDisplay, toDisplay);
+    var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
+    logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
     switchHandled = true;
     redrawSketch();
   }
 
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown (RIGHT_ARROW)) {
-    var fromDisplay = displays[focusedDisplay].activeVirtualDesktop;
+    var fromVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchRight();
-    var toDisplay = displays[focusedDisplay].activeVirtualDesktop;
-    logger.logSwitch(focusedDisplay, fromDisplay, toDisplay);
+    var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
+    logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
     switchHandled = true;
     redrawSketch();
   }
