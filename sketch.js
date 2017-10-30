@@ -257,7 +257,7 @@ function drawPractice() {
   [x, y] = Scaler.abstract2pixel_coordinate(-0.95, -0.75);
   text('Group ID: ' + settings.groupID, x, y);
   [x, y] = Scaler.abstract2pixel_coordinate(-0.95, -0.70);
-  text('Trial: ' + settings.trial, x, y);
+  text('Phase: ' + settings.phase, x, y);
   [x, y] = Scaler.abstract2pixel_coordinate(-0.95, -0.65);
   text('Wordset: ' + settings.wordset, x, y);
   [x, y] = Scaler.abstract2pixel_coordinate(-0.95, -0.60);
