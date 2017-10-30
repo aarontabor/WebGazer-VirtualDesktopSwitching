@@ -7,7 +7,8 @@
 var STATE_PRACTICE = 1;
 var STATE_TRAINING = 2;
 var STATE_EXPERIMENT = 3;
-var STATE_FINISH = 4;
+var STATE_BLOCK_REST = 4;
+var STATE_FINISH = 5;
 
 
 
@@ -20,6 +21,11 @@ var DISPLAY_YS = [0.0, 0.0];
 var INPUT_WIDTH = 0.4;
 
 var TARGET_RADIUS = 0.1;
+
+
+// Constants //////////
+var NUMBER_OF_BLOCKS = 6;
+var TRIALS_PER_BLOCK = 10;
 
 
 // Global variables //////////
@@ -42,6 +48,7 @@ var wordset2Adjectives;
 var inputBox;
 var beginButton;
 var trainButton;
+var resumeButton;
 
 // load table is asychronous, so just load everything right off the bat.
 var trialHints;
@@ -49,6 +56,8 @@ var exampleHints;
 var wordset1Hints;
 var wordset2Hints;
 var currentTrial;
+
+var currentBlock;
 
 var targetsTable;
 var trainingTargets;
@@ -136,11 +145,16 @@ function setup() {
   trainButton = createButton('Train Eye Tracker');
   trainButton.mousePressed(transitionToTraining);
 
+  // initialize button used to resume experiment from inter-block resting phase
+  resumeButton = createButton('Resume Experiment');
+  resumeButton.mousePressed(resumeExperiment);
+
   // initial program state
   state = STATE_PRACTICE;
   focusedDisplay = 0;
   trialHints = exampleHints;
   currentTrial = 0;
+  currentBlock = 0;
   switchHandled = false;
   isPractice = true;
   currentTrainingTarget = 0;
@@ -160,10 +174,16 @@ function transitionToExperiment() {
   // reset Displays
   initializeDisplays();
 
-  // transition to experiment state
-  state = STATE_EXPERIMENT;
+  // transition to first block rest
+  state = STATE_BLOCK_REST;
 
   // redraw canvas
+  redrawSketch();
+}
+
+function resumeExperiment() {
+  currentBlock += 1;
+  state = STATE_EXPERIMENT;
   redrawSketch();
 }
 
@@ -187,6 +207,7 @@ function redrawSketch() {
   inputBox.hide();
   beginButton.hide();
   trainButton.hide();
+  resumeButton.hide();
 
   switch (state) {
     case STATE_PRACTICE:
@@ -199,6 +220,9 @@ function redrawSketch() {
     case STATE_EXPERIMENT:
       isPractice = false;
       drawExperiment();
+      break;
+    case STATE_BLOCK_REST:
+      drawBlockRest();
       break;
     case STATE_FINISH:
       drawFinish();
@@ -251,6 +275,18 @@ function drawExperiment() {
     var h = Scaler.abstract2pixel_height(DISPLAY_HEIGHT);
     displays[i].draw(x,y,w,h);
   }
+}
+
+function drawBlockRest() {
+  textAlign(CENTER);
+  fill(0);
+  stroke(0);
+  textSize(30);
+  [x, y] = Scaler.abstract2pixel_coordinate(0, 0);
+  var upcomingBlock = currentBlock+1;
+  text('Click below to begin block ' + upcomingBlock + ' of ' + NUMBER_OF_BLOCKS + '.', x, y);
+  resumeButton.position(x, y+30);
+  resumeButton.show();
 }
 
 function drawFinish() {
@@ -319,6 +355,11 @@ function onUserSubmit() {
 
   inputBox.value('');
   currentTrial += 1;
+
+  // check to see if end of block (don't do this if practice)
+  if (state == STATE_EXPERIMENT && currentTrial % TRIALS_PER_BLOCK == 0) {
+    state = STATE_BLOCK_REST;
+  }
 
   if (currentTrial >= trialHints.getRowCount()) {
     state = STATE_FINISH;
