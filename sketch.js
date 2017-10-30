@@ -67,6 +67,7 @@ var currentTrainingTarget;
 var displays;
 var focusedDisplay;
 
+var switchHandled; // a flag to ensure user must release arrow keys bt/wn switches
 var isPractice;
 
 var trialStartTimestamp;
@@ -160,6 +161,7 @@ function setup() {
   trialHints = exampleHints;
   currentTrial = 0;
   currentBlock = 0;
+  switchHandled = false;
   isPractice = true;
   currentTrainingTarget = 0;
 
@@ -197,6 +199,10 @@ function transitionToTraining() {
   currentTrainingTarget = 0;
   state = STATE_TRAINING;
   redrawSketch();
+}
+
+function draw() {
+  detectKeyboardShortcuts(); // TODO: is there a cleaner way to wire this asychronous behavior up?
 }
 
 // For performance reasons (with the webgazer.js library), only redraw the canvas when an "interesting" event occurs
@@ -368,24 +374,29 @@ function onUserSubmit() {
   redrawSketch();
 }
 
-function keyTyped() {
-  if (settings.switchingTechnique == 'gaze') {
-    detectGaze();
+function detectKeyboardShortcuts() {
+  detectGaze();
+
+  // user must release both arrow keys bt/wn switches
+  if (switchHandled && !keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)) {
+    switchHandled = false;
   }
 
-  if (keyIsDown(CONTROL) && keyCode == LEFT_ARROW) {
+  if (!switchHandled && keyIsDown(CONTROL) && keyIsDown(LEFT_ARROW)) {
     var fromVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchLeft();
     var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
+    switchHandled = true;
     redrawSketch();
   }
 
-  if (keyIsDown(CONTROL) && keyCode == RIGHT_ARROW) {
+  if (!switchHandled && keyIsDown(CONTROL) && keyIsDown (RIGHT_ARROW)) {
     var fromVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchRight();
     var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
+    switchHandled = true;
     redrawSketch();
   }
 }
