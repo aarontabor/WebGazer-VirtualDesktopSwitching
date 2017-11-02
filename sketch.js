@@ -164,8 +164,6 @@ function setup() {
   switchHandled = false;
   isPractice = true;
   currentTrainingTarget = 0;
-
-  redrawSketch();
 }
 
 function transitionToExperiment() {
@@ -182,15 +180,11 @@ function transitionToExperiment() {
 
   // transition to first block rest
   state = STATE_BLOCK_REST;
-
-  // redraw canvas
-  redrawSketch();
 }
 
 function resumeExperiment() {
   currentBlock += 1;
   state = STATE_EXPERIMENT;
-  redrawSketch();
 }
 
 function transitionToTraining() {
@@ -198,16 +192,11 @@ function transitionToTraining() {
   webgazer.showPredictionPoints(true);
   currentTrainingTarget = 0;
   state = STATE_TRAINING;
-  redrawSketch();
 }
 
 function draw() {
-  detectKeyboardShortcuts(); // TODO: is there a cleaner way to wire this asychronous behavior up?
-}
-
-// For performance reasons (with the webgazer.js library), only redraw the canvas when an "interesting" event occurs
-function redrawSketch() {
   clear();
+  detectKeyboardShortcuts();
 
   // these fields will later be unhidden as appropriate
   inputBox.hide();
@@ -316,7 +305,6 @@ function mouseClicked() {
       for (var i=0; i<displays.length; i++) {
         if (isCoordinateInDisplay(x, y, i)) {
           focusedDisplay = i;
-          redrawSketch();
           return;
         }
       }
@@ -334,7 +322,6 @@ function mouseClicked() {
           currentTrainingTarget = 0;
           state = STATE_PRACTICE;
         }
-        redrawSketch();
       }
 
       break;
@@ -370,8 +357,6 @@ function onUserSubmit() {
   if (currentTrial >= trialHints.getRowCount()) {
     state = STATE_FINISH;
   }
-
-  redrawSketch();
 }
 
 function detectKeyboardShortcuts() {
@@ -388,7 +373,6 @@ function detectKeyboardShortcuts() {
     var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
     switchHandled = true;
-    redrawSketch();
   }
 
   if (!switchHandled && keyIsDown(CONTROL) && keyIsDown (RIGHT_ARROW)) {
@@ -397,7 +381,6 @@ function detectKeyboardShortcuts() {
     var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
     switchHandled = true;
-    redrawSketch();
   }
 }
 
