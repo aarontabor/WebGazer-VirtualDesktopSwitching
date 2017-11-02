@@ -470,6 +470,29 @@ class Display {
 
     // draw active virtual desktop
     this.virtualDesktops[this.activeVirtualDesktop].draw(x, y, w, h);
+
+    // draw a "currently focused" virtual desktop indicator
+    rectMode(CENTER);
+    ellipseMode(CENTER);
+    fill(0);
+    stroke(0);
+    strokeWeight(1);
+
+    var padding = 0.05*w;
+    for (var i=0; i<this.virtualDesktops.length; i++) {
+      var pointX = x - w/2 + padding + i*0.03*w;
+      var pointY = y - h/2 + padding;
+
+      if (i == this.activeVirtualDesktop) {
+        fill(255);
+        strokeWeight(2);
+        rect(pointX, pointY, 0.03*w, 0.03*w);
+        fill(0);
+        strokeWeight(1);
+      }
+
+      ellipse(pointX, pointY, 0.01*h);
+    }
   }
 
   switchLeft() {
