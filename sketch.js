@@ -330,7 +330,7 @@ function mouseClicked() {
         currentTrainingTarget += 1;
         if (currentTrainingTarget >= trainingTargets.length) {
           webgazer.removeMouseEventListeners();
-        webgazer.showPredictionPoints(false);
+          webgazer.showPredictionPoints(false);
           currentTrainingTarget = 0;
           state = STATE_PRACTICE;
         }
