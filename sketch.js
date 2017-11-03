@@ -185,6 +185,7 @@ function transitionToExperiment() {
 function resumeExperiment() {
   currentBlock += 1;
   state = STATE_EXPERIMENT;
+  trialStartTimestamp = Date.now();
 }
 
 function transitionToTraining() {
@@ -214,7 +215,6 @@ function draw() {
       break;
     case STATE_EXPERIMENT:
       isPractice = false;
-      trialStartTimestamp = Date.now();
       drawExperiment();
       break;
     case STATE_BLOCK_REST:
@@ -356,6 +356,7 @@ function onUserSubmit() {
 
   inputBox.value('');
   currentTrial += 1;
+  trialStartTimestamp = Date.now();
 
   // check to see if end of block (don't do this if practice)
   if (state == STATE_EXPERIMENT && currentTrial % TRIALS_PER_BLOCK == 0) {
