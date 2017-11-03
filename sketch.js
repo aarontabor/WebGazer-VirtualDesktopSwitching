@@ -639,6 +639,7 @@ class Logger {
     this.trialTable.addColumn('phase');
     this.trialTable.addColumn('block');
     this.trialTable.addColumn('trial');
+    this.trialTable.addColumn('minimumSwitches');
     this.trialTable.addColumn('isPractice');
     this.trialTable.addColumn('switchingTechnique');
     this.trialTable.addColumn('elapsedTimeMillis');
@@ -668,6 +669,7 @@ class Logger {
     this.switchTable.addColumn('phase');
     this.switchTable.addColumn('block');
     this.switchTable.addColumn('trial');
+    this.switchTable.addColumn('minimumSwitches');
     this.switchTable.addColumn('isPractice');
     this.switchTable.addColumn('switchingTechnique');
     this.switchTable.addColumn('timestamp');
@@ -685,6 +687,7 @@ class Logger {
     newRow.set('phase', settings.phase);
     newRow.set('block', currentBlock);
     newRow.set('trial', currentTrial);
+    newRow.set('minimumSwitches', trialHints.getRow(currentTrial).get('minimumSwitches'));
     newRow.set('isPractice', isPractice);
     newRow.set('switchingTechnique', settings.switchingTechnique);
     newRow.set('elapsedTimeMillis', trialEndTimestamp - trialStartTimestamp);
@@ -718,6 +721,7 @@ class Logger {
     newRow.set('phase', settings.phase);
     newRow.set('block', currentBlock);
     newRow.set('trial', currentTrial);
+    newRow.set('minimumSwitches', trialHints.getRow(currentTrial).get('minimumSwitches'));
     newRow.set('isPractice', isPractice)
     newRow.set('switchingTechnique', settings.switchingTechnique);
     newRow.set('timestamp', Date.now());
