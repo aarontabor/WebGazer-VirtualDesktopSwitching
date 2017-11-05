@@ -290,6 +290,10 @@ function drawBlockRest() {
   text('Click below to begin block ' + upcomingBlock + ' of ' + NUMBER_OF_BLOCKS + '.', x, y);
   resumeButton.position(x, y+30);
   resumeButton.show();
+
+  [x, y] = Scaler.abstract2pixel_coordinate(-0.95, 0.85);
+  trainButton.position(x,y);
+  trainButton.show();
 }
 
 function drawFinish() {
@@ -327,7 +331,11 @@ function mouseClicked() {
           webgazer.removeMouseEventListeners();
           webgazer.showPredictionPoints(false);
           currentTrainingTarget = 0;
-          state = STATE_PRACTICE;
+          if (currentBlock == 0) {
+            state = STATE_PRACTICE;
+          } else {
+            state = STATE_BLOCK_REST;
+          }
         }
       }
 
