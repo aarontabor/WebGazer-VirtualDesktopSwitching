@@ -403,13 +403,6 @@ function detectGaze() {
   focusedDisplay = gazeData.x >= width/2 ? 1 : 0;
 }
 
-function onGaze(gazeData, elapsedTime) {
-  if (gazeData == null) {
-    return;
-  }
-  focusedDisplay = gazeData.x < width/2 ? 0 : 1;
-}
-
 
 // Utility functions //////////
 function isCoordinateInDisplay(x, y, displayIndex) {
