@@ -67,7 +67,6 @@ var currentTrainingTarget;
 var displays;
 var focusedDisplay;
 
-var switchHandled; // a flag to ensure user must release arrow keys bt/wn switches
 var isPractice;
 
 var trialStartTimestamp;
@@ -161,7 +160,6 @@ function setup() {
   trialHints = exampleHints;
   currentTrial = 0;
   currentBlock = 0;
-  switchHandled = false;
   isPractice = true;
   currentTrainingTarget = 0;
 }
@@ -197,7 +195,7 @@ function transitionToTraining() {
 
 function draw() {
   clear();
-  detectKeyboardShortcuts();
+  detectGaze();
 
   // these fields will later be unhidden as appropriate
   inputBox.hide();
@@ -369,28 +367,19 @@ function onUserSubmit() {
   }
 }
 
-function detectKeyboardShortcuts() {
-  detectGaze();
-
-  // user must release both arrow keys bt/wn switches
-  if (switchHandled && !keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)) {
-    switchHandled = false;
-  }
-
-  if (!switchHandled && keyIsDown(CONTROL) && keyIsDown(LEFT_ARROW)) {
+function keyPressed() {
+  if (keyIsDown(CONTROL) && keyCode == LEFT_ARROW) {
     var fromVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchLeft();
     var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
-    switchHandled = true;
   }
 
-  if (!switchHandled && keyIsDown(CONTROL) && keyIsDown (RIGHT_ARROW)) {
+  if (keyIsDown(CONTROL) && keyCode == RIGHT_ARROW) {
     var fromVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     displays[focusedDisplay].switchRight();
     var toVirtualDesktop = displays[focusedDisplay].activeVirtualDesktop;
     logger.logSwitch(focusedDisplay, fromVirtualDesktop, toVirtualDesktop);
-    switchHandled = true;
   }
 }
 
