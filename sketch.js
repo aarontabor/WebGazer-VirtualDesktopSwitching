@@ -195,7 +195,10 @@ function transitionToTraining() {
 
 function draw() {
   clear();
-  detectGaze();
+
+  if (settings.switchingTechnique == 'gaze') {
+    detectGaze();
+  }
 
   // these fields will later be unhidden as appropriate
   inputBox.hide();
