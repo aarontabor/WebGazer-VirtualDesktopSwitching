@@ -10878,7 +10878,7 @@ var mosseFilterResponses = function() {
         document.body.removeChild(videoElement);
         document.body.removeChild(videoElementCanvas);
 
-        setGlobalData();
+        //setGlobalData();
         return webgazer;
     };
 
