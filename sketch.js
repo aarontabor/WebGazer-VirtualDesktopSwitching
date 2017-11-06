@@ -30,6 +30,7 @@ var TRIALS_PER_BLOCK = 10;
 
 // Global variables //////////
 var state;
+var gazeTracker;
 var settings;
 var logger;
 
@@ -107,17 +108,8 @@ function setup() {
   logger = new Logger();
 
   if (settings.switchingTechnique == 'gaze') {
-    webgazer.params.imgWidth = 320;
-    webgazer.params.imgHeight = 240;
-    webgazer.setRegression('threadedRidge');
-
-    // When I explicitly set a tracker, there is a huge performance hit. Why is this? I think the webgazer defaults to clmtrackr anyway...
-    // webgazer.setTracker('clmtrackr');
-
-    webgazer.begin();
-
-    // Only consider mouse activity during training
-    webgazer.removeMouseEventListeners();
+    gazeTracker = new GazeTracker();
+    gazeTracker.pauseTraining();
   }
 
   // build displays and virtual desktops
@@ -187,8 +179,9 @@ function resumeExperiment() {
 }
 
 function transitionToTraining() {
-  webgazer.addMouseEventListeners();
-  webgazer.showPredictionPoints(true);
+  gazeTracker.clearTrainingData();
+  gazeTracker.resumeTraining();
+ 
   currentTrainingTarget = 0;
   state = STATE_TRAINING;
 }
@@ -331,8 +324,7 @@ function mouseClicked() {
       if (t.pointInTarget(x, y)) {
         currentTrainingTarget += 1;
         if (currentTrainingTarget >= trainingTargets.length) {
-          webgazer.removeMouseEventListeners();
-          webgazer.showPredictionPoints(false);
+          gazeTracker.pauseTraining();
           currentTrainingTarget = 0;
           if (currentBlock == 0) {
             state = STATE_PRACTICE;
@@ -395,7 +387,7 @@ function keyPressed() {
 }
 
 function detectGaze() {
-  var gazeData = webgazer.getCurrentPrediction();
+  var gazeData = gazeTracker.getCurrentPrediction();
   if (gazeData == null) {
     return;
   }
@@ -616,6 +608,40 @@ class Target {
     var d = y < (this.y + this.radius);
 
     return a && b && c && d;
+  }
+}
+
+class GazeTracker {
+  constructor() {
+    this.initialize();
+  }
+
+  initialize() {
+    webgazer.params.imgWidth = 320;
+    webgazer.params.imgHeight = 240;
+    webgazer.setRegression('threadedRidge');
+    // When I explicitly set a tracker, there is a huge performance hit. Why is this? I think the webgazer defaults to clmtrackr anyway...
+    // webgazer.setTracker('clmtrackr');
+    webgazer.begin();
+  }
+
+  pauseTraining() {
+    webgazer.removeMouseEventListeners();
+    webgazer.showPredictionPoints(false);
+  }
+
+  resumeTraining() {
+    webgazer.addMouseEventListeners();
+    webgazer.showPredictionPoints(true);
+  }
+
+  clearTrainingData() {
+    webgazer.end();
+    this.initialize();
+  }
+
+  getCurrentPrediction() {
+    return webgazer.getCurrentPrediction();
   }
 }
 
