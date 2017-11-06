@@ -296,6 +296,7 @@ function drawBlockRest() {
   textAlign(CENTER);
   fill(0);
   stroke(0);
+  strokeWeight(1);
   textSize(30);
   [x, y] = Scaler.abstract2pixel_coordinate(0, 0);
   var upcomingBlock = currentBlock+1;
