@@ -277,6 +277,22 @@ function drawExperiment() {
 }
 
 function drawBlockRest() {
+  if (settings.switchingTechnique == 'gaze') {
+    for (var i=0; i<displays.length; i++) {
+      var [x, y] = Scaler.abstract2pixel_coordinate(DISPLAY_XS[i], DISPLAY_YS[i]);
+      var w = Scaler.abstract2pixel_width(DISPLAY_WIDTH);
+      var h = Scaler.abstract2pixel_height(DISPLAY_HEIGHT);
+
+      if (i == focusedDisplay) {
+        rectMode(CENTER);
+        fill(0, 255, 0, 75);
+        stroke(255, 0);
+        strokeWeight(1);
+        rect(x, y, w+10, h+10);
+      }
+    } 
+  }
+  
   textAlign(CENTER);
   fill(0);
   stroke(0);
