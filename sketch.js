@@ -26,6 +26,7 @@ var TARGET_RADIUS = 0.1;
 // Constants //////////
 var NUMBER_OF_BLOCKS = 6;
 var TRIALS_PER_BLOCK = 10;
+var BUFFER_WINDOW_SIZE = 5;
 
 
 // Global variables //////////
@@ -405,10 +406,6 @@ function keyPressed() {
 
 function detectGaze() {
   var gazeData = gazeTracker.getCurrentPrediction();
-  if (gazeData == null) {
-    return;
-  }
-
   focusedDisplay = gazeData.x >= width/2 ? 1 : 0;
 }
 
@@ -453,6 +450,14 @@ function initializeDisplays() {
       new CategoryViewerVirtualDesktop('Adjectives', adjectives),
     ], 1),
   ];
+}
+
+function arrayAverage(a) {
+  var sum = 0;
+  for (var i=0; i<a.length; i++) {
+    sum += a[i];
+  }
+  return sum/a.length;
 }
 
 
@@ -634,6 +639,9 @@ class GazeTracker {
   }
 
   initialize() {
+    this.xs = [];
+    this.ys = [];
+
     webgazer.params.imgWidth = 320;
     webgazer.params.imgHeight = 240;
     webgazer.setRegression('threadedRidge');
@@ -658,7 +666,21 @@ class GazeTracker {
   }
 
   getCurrentPrediction() {
-    return webgazer.getCurrentPrediction();
+    var gazeData = webgazer.getCurrentPrediction();
+
+    if (gazeData == null) {
+      return {x: 0, y:0};
+    }
+
+    this.xs.unshift(gazeData.x);
+    this.ys.unshift(gazeData.y);
+
+    if (this.xs.length > BUFFER_WINDOW_SIZE) {
+      this.xs.pop();
+      this.ys.pop();
+    }
+
+    return {x: arrayAverage(this.xs), y: arrayAverage(this.ys)};
   }
 }
 
