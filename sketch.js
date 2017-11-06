@@ -13,9 +13,9 @@ var STATE_FINISH = 5;
 
 
 // Display Dimensions (abstract coordinates) //////////
-var DISPLAY_WIDTH = 0.8;
-var DISPLAY_HEIGHT = 0.8;
-var DISPLAY_XS = [-0.55, 0.55];
+var DISPLAY_WIDTH = 0.7;
+var DISPLAY_HEIGHT = 0.7;
+var DISPLAY_XS = [-0.60, 0.60];
 var DISPLAY_YS = [0.0, 0.0];
 
 var INPUT_WIDTH = 0.4;
